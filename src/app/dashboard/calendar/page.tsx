@@ -125,6 +125,7 @@ function formatDuration(minutes: number): string {
 
 export default function CalendarPage() {
   const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -144,6 +145,7 @@ export default function CalendarPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<CalendarCell | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
   // Multiple Work Entries State per day
   const [workEntries, setWorkEntries] = useState<WorkEntry[]>([]);
@@ -234,6 +236,7 @@ export default function CalendarPage() {
   const handleDayClick = (cell: CalendarCell) => {
     if (cell.isPadding) return;
     setSelectedDay(cell);
+    setSelectedDate(cell.date || todayStr);
     setError("");
 
     const gridRow = gridRows.find((r) => r.date === cell.date);
@@ -249,7 +252,7 @@ export default function CalendarPage() {
         title: (gridRow.data.videoTitle || gridRow.data.title || gridRow.data.taskTitle || "Work Deliverable") as string,
         category: (gridRow.data.designType || gridRow.data.platform || "Deliverable") as string,
         hoursSpent: String(gridRow.data.hoursSpent || "1"),
-        link: (gridRow.data.driveLink || gridRow.data.figmaLink || gridRow.data.liveLink || "") as string,
+        link: (gridRow.data.fileName || gridRow.data.driveLink || gridRow.data.figmaLink || gridRow.data.liveLink || "") as string,
         remarks: (gridRow.data.remarks || gridRow.data.notes || "") as string,
       };
       existingEntries = [firstEntry];
@@ -287,10 +290,11 @@ export default function CalendarPage() {
 
   // ── Save multiple work entries ──
   const handleSave = async () => {
-    if (!selectedDay || !gridUser) return;
+    if (!gridUser) return;
     setSaving(true);
 
     let hasError = false;
+    const targetDate = selectedDate || selectedDay?.date || todayStr;
 
     // Filter out completely empty entries
     const validEntries = workEntries.filter((e) => e.title.trim() !== "" || e.remarks.trim() !== "");
@@ -301,7 +305,7 @@ export default function CalendarPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: gridUser.id,
-          date: selectedDay.date,
+          date: targetDate,
           entries: validEntries,
         }),
       });
@@ -315,7 +319,7 @@ export default function CalendarPage() {
       const eodRes = await fetch("/api/tasks/eod", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: selectedDay.date, eodSummary: eodValue }),
+        body: JSON.stringify({ date: targetDate, eodSummary: eodValue }),
       });
       if (!eodRes.ok) hasError = true;
     } catch {
@@ -345,7 +349,7 @@ export default function CalendarPage() {
     cells.push({ isPadding: true, key: `pad-prev-${i}`, date: "", status: "ABSENT" });
   }
 
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
 
   for (let d = 1; d <= totalDays; d++) {
     const dayStr = String(d).padStart(2, "0");
@@ -566,13 +570,23 @@ export default function CalendarPage() {
 
             {/* ── Modal Header ── */}
             <div className="flex items-start justify-between px-5 sm:px-6 py-4 border-b border-[#E8DFD3] bg-[#F5EFE6]">
-              <div className="flex flex-col gap-0.5">
+              <div className="flex flex-col gap-1">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#B87C4C]">
                   REIZ Media Deliverables
                 </p>
-                <h2 className="text-lg sm:text-xl font-black text-[#2D221E] leading-tight">
-                  {selectedDayLabel}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="rounded-lg border border-[#E8DFD3] bg-white px-2.5 py-1 text-sm font-bold text-[#2D221E] focus:outline-none focus:ring-2 focus:ring-[#362722]"
+                  />
+                  {selectedDayLabel && (
+                    <span className="text-xs font-semibold text-[#8C7A6B]">
+                      ({selectedDayLabel})
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
                 {selectedDay && (
@@ -705,7 +719,7 @@ export default function CalendarPage() {
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold text-[#8C7A6B] uppercase tracking-wider mb-1">
-                          Video / File Name
+                          File Name
                         </label>
                         <input
                           type="text"

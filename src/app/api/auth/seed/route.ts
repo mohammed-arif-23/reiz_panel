@@ -14,70 +14,61 @@ const DEFAULT_PASSWORD = "reizpulse2026";
 // ---------------------------------------------------------------------------
 const TEMPLATES_DATA = [
   {
-    name: "Video Editor Template",
-    assignedRoles: ["Video Editor"],
+    name: "Content Writer Template",
+    assignedRoles: ["Content Writer"],
+    isActive: true,
     columns: [
-      { key: "date",             label: "Date",              type: "text"   },
-      { key: "login",            label: "Login",             type: "text"   },
-      { key: "logout",           label: "Logout",            type: "text"   },
-      { key: "workHours",        label: "Work Hours",        type: "number" },
-      { key: "video1",           label: "Video 1",           type: "text"   },
-      { key: "video2",           label: "Video 2",           type: "text"   },
-      { key: "video3",           label: "Video 3",           type: "text"   },
-      { key: "video4",           label: "Video 4",           type: "text"   },
-      { key: "video5",           label: "Video 5",           type: "text"   },
-      { key: "correctionVideos", label: "Correction Videos", type: "text"   },
-      { key: "remarks",          label: "Remarks",           type: "text"   },
+      {
+        key: "designType",
+        label: "Design Type",
+        type: "select",
+        options: ["Social Media", "Banner", "UI/UX", "Ad", "Blog", "Other"],
+      },
+      { key: "designTitle", label: "Design Title", type: "text" },
+      { key: "revisionNo", label: "Revision No.", type: "number" },
+      { key: "figmaLink", label: "Figma Link", type: "text" },
+      { key: "fileName", label: "File Name", type: "text" },
+      { key: "hoursSpent", label: "Hours Spent", type: "number" },
     ],
   },
   {
-    name: "Graphic Designer Template",
-    assignedRoles: ["Graphic Designer"],
+    name: "Video Editor Template",
+    assignedRoles: ["Video Editor"],
+    isActive: true,
     columns: [
-      { key: "date",         label: "Date",         type: "text"   },
-      { key: "login",        label: "Login",        type: "text"   },
-      { key: "logout",       label: "Logout",       type: "text"   },
-      { key: "workHours",    label: "Work Hours",   type: "number" },
-      { key: "poster1",      label: "Poster 1",     type: "text"   },
-      { key: "poster2",      label: "Poster 2",     type: "text"   },
-      { key: "thumbnail",    label: "Thumbnail",    type: "text"   },
-      { key: "carousel",     label: "Carousel",     type: "text"   },
-      { key: "revisionWork", label: "Revision Work",type: "text"   },
-      { key: "remarks",      label: "Remarks",      type: "text"   },
+      { key: "videoTitle", label: "Video Title", type: "text" },
+      { key: "rawDuration", label: "Raw Duration (Min)", type: "text" },
+      { key: "editedDuration", label: "Edited Duration (Min)", type: "text" },
+      { key: "renderTime", label: "Render Time (Min)", type: "number" },
+      { key: "fileName", label: "File Name", type: "text" },
+      { key: "hoursSpent", label: "Hours Spent", type: "number" },
     ],
   },
   {
     name: "Social Media Manager Template",
     assignedRoles: ["Social Media Manager"],
+    isActive: true,
     columns: [
-      { key: "client1",        label: "Client 1",         type: "text"   },
-      { key: "client2",        label: "Client 2",         type: "text"   },
-      { key: "postsScheduled", label: "Posts Scheduled",  type: "number" },
-      { key: "storiesUploaded",label: "Stories Uploaded", type: "number" },
-      { key: "reportsSent",    label: "Reports Sent",     type: "number" },
-      { key: "meetings",       label: "Meetings",         type: "number" },
-      { key: "remarks",        label: "Remarks",          type: "text"   },
+      {
+        key: "platform",
+        label: "Platform",
+        type: "select",
+        options: ["Instagram", "Facebook", "LinkedIn", "YouTube", "Twitter/X", "TikTok", "Other"],
+      },
+      { key: "postTitle", label: "Post Title", type: "text" },
+      { key: "scheduledTime", label: "Scheduled Time", type: "text" },
+      { key: "liveLink", label: "Live Link", type: "text" },
+      { key: "estEngagement", label: "Est. Engagement", type: "number" },
     ],
   },
   {
-    name: "Sales Template",
-    assignedRoles: ["Sales"],
-    columns: [
-      { key: "callsMade",       label: "Calls Made",        type: "number" },
-      { key: "leadsContacted",  label: "Leads Contacted",   type: "number" },
-      { key: "followUps",       label: "Follow-Ups",        type: "number" },
-      { key: "meetings",        label: "Meetings",          type: "number" },
-      { key: "dealsClosed",     label: "Deals Closed",      type: "number" },
-      { key: "remarks",         label: "Remarks",           type: "text"   },
-    ],
-  },
-  {
-    name: "General Template",
+    name: "General Employee Template",
     assignedRoles: ["General"],
+    isActive: true,
     columns: [
-      { key: "taskTitle",   label: "Task Title",   type: "text"   },
-      { key: "description", label: "Description",  type: "text"   },
-      { key: "hoursSpent",  label: "Hours Spent",  type: "number" },
+      { key: "taskTitle", label: "Task Title", type: "text" },
+      { key: "description", label: "Description", type: "text" },
+      { key: "hoursSpent", label: "Hours Spent", type: "number" },
       {
         key: "status",
         label: "Status",
@@ -144,9 +135,10 @@ export async function GET(request: NextRequest) {
       upsertedTemplates.push(doc);
     }
 
-    const videoEditorTemplate    = upsertedTemplates[0];
-    const graphicDesignerTemplate= upsertedTemplates[1];
-    const generalTemplate        = upsertedTemplates[4]; // "General Template"
+    const contentWriterTemplate  = upsertedTemplates[0]; // Content Writer Template
+    const videoEditorTemplate    = upsertedTemplates[1]; // Video Editor Template
+    const socialMediaTemplate   = upsertedTemplates[2]; // Social Media Manager Template
+    const generalTemplate        = upsertedTemplates[3]; // General Employee Template
 
     // -----------------------------------------------------------------------
     // 2. Hash shared password once
@@ -198,14 +190,14 @@ export async function GET(request: NextRequest) {
         assignedTemplateId: videoEditorTemplate._id,
       },
       {
-        name:               "Graphic Designer",
+        name:               "Content Writer",
         email:              "employee2@reizmedia.com",
         password:           hashed,
         role:               "EMPLOYEE",
-        designation:        "Graphic Designer",
-        department:         "Design",
+        designation:        "Content Writer",
+        department:         "Content",
         status:             "ACTIVE",
-        assignedTemplateId: graphicDesignerTemplate._id,
+        assignedTemplateId: contentWriterTemplate._id,
       },
     ];
 
@@ -234,17 +226,12 @@ export async function GET(request: NextRequest) {
         templateId: videoEditorTemplate._id,
         columnsSnapshot: videoEditorTemplate.columns,
         data: {
-          date:             today,
-          login:            "09:00",
-          logout:           "18:00",
-          workHours:        9,
-          video1:           "MAY VR 8 - Brand Video",
-          video2:           "MAY PD 13 - Product Demo",
-          video3:           "",
-          video4:           "",
-          video5:           "",
-          correctionVideos: "",
-          remarks:          "Completed MAY VR 8, started colour grade on MAY PD 13",
+          videoTitle:     "MAY VR 8 - Brand Video",
+          rawDuration:    "45",
+          editedDuration: "3",
+          renderTime:     15,
+          fileName:       "MAY_VR_8_Final_v2.mp4",
+          hoursSpent:     6,
         },
         tasks: [
           {
