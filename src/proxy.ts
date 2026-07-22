@@ -2,13 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
-export async function middleware(request: NextRequest) {
-  return handleRouting(request);
-}
-
-export default middleware;
-
-async function handleRouting(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Static files, API routes, and public assets should be bypassed
@@ -22,32 +16,46 @@ async function handleRouting(request: NextRequest) {
   }
 
   const tokenCookie = request.cookies.get("token")?.value;
-
-  // Protected pages check
-  const isAuthPage = pathname.startsWith("/login");
+  const isAuthPage = pathname === "/login";
   const isProtectedPage =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/client");
 
+  // 1. Unauthenticated or missing token
   if (!tokenCookie) {
     if (isProtectedPage) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
     return NextResponse.next();
   }
 
+  // 2. Token exists — verify payload
   const payload = await verifyToken(tokenCookie);
 
+  // If token is invalid or expired
   if (!payload) {
-    const response = NextResponse.redirect(new URL("/login", request.url));
+    // If already on login page, just clear invalid token and render page (NO redirect loop)
+    if (isAuthPage) {
+      const response = NextResponse.next();
+      response.cookies.delete("token");
+      return response;
+    }
+    const loginUrl = new URL("/login", request.url);
+    if (isProtectedPage) {
+      loginUrl.searchParams.set("redirect", pathname);
+    }
+    const response = NextResponse.redirect(loginUrl);
     response.cookies.delete("token");
     return response;
   }
 
-  // Determine role-specific home portal
+  // 3. User is validly authenticated
   let portalHome = "/dashboard";
   if (["SUPER_ADMIN", "ADMIN", "MANAGER"].includes(payload.role)) {
     portalHome = "/admin";
@@ -55,17 +63,15 @@ async function handleRouting(request: NextRequest) {
     portalHome = "/client";
   }
 
-  // User is authenticated — redirect away from login
+  // If logged in user hits /login or /, redirect to their portal home
   if (isAuthPage || pathname === "/") {
     return NextResponse.redirect(new URL(portalHome, request.url));
   }
 
-  // Admin route protection
+  // Role permissions check
   if (pathname.startsWith("/admin") && !["SUPER_ADMIN", "ADMIN", "MANAGER"].includes(payload.role)) {
     return NextResponse.redirect(new URL(portalHome, request.url));
   }
-
-  // Client route protection
   if (pathname.startsWith("/client") && payload.role !== "CLIENT") {
     return NextResponse.redirect(new URL(portalHome, request.url));
   }
