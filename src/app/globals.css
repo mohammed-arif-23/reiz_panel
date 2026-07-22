@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@import "../../node_modules/@heroui/styles/dist/index.css";
+
+@source "../../node_modules/@heroui/react/dist/**/*.{js,ts,jsx,tsx}";
+
+:root {
+  /* REIZ Media Premium Warm Cream & Dark Espresso Theme */
+  --bg-cream: #FAF6F0;
+  --bg-card: #FFFFFF;
+  --bg-surface: #F5EFE6;
+  --border-warm: #E8DFD3;
+  --border-subtle: #F0E8DD;
+  
+  --text-espresso: #2D221E;
+  --text-caramel: #B87C4C;
+  --text-muted: #8C7A6B;
+  --text-light: #A39385;
+
+  --accent-espresso: #362722;
+  --accent-espresso-hover: #261A16;
+  --accent-gold: #C68B59;
+  --accent-gold-light: #F7EBE1;
+
+  --background: var(--bg-cream);
+  --foreground: var(--text-espresso);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  background: var(--bg-cream);
+  color: var(--text-espresso);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Custom scrollbar matching warm aesthetics */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF6F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8CCBE;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B8A896;
+}
