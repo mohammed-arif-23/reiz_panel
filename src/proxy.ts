@@ -6,10 +6,6 @@ export async function proxy(request: NextRequest) {
   return handleRouting(request);
 }
 
-export async function middleware(request: NextRequest) {
-  return handleRouting(request);
-}
-
 async function handleRouting(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
