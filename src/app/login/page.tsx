@@ -58,7 +58,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-black text-[#2D221E] tracking-tight">REIZ MEDIA</h1>
           <p className="mt-1 text-xs font-extrabold uppercase tracking-widest text-[#B87C4C]">
-            Pulse Portal Sign In
+            REIZ Portal Sign In
           </p>
         </div>
 

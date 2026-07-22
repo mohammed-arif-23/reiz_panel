@@ -164,7 +164,7 @@ export default function ReportsPage() {
       const ws = XLSX.utils.json_to_sheet(rows, { header: headers });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Monthly Productivity Report");
-      XLSX.writeFile(wb, `REIZ_Pulse_Report_${MONTH_SHORT[parseInt(month) - 1]}_${year}.xlsx`);
+      XLSX.writeFile(wb, `REIZ_Report_${MONTH_SHORT[parseInt(month) - 1]}_${year}.xlsx`);
       setSuccess("XLSX report exported successfully!");
     } catch {
       setError("Failed to export XLSX report.");
@@ -207,7 +207,7 @@ export default function ReportsPage() {
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement("a");
       a.href     = url;
-      a.download = `REIZ_Pulse_Report_${MONTH_SHORT[parseInt(month) - 1]}_${year}.csv`;
+      a.download = `REIZ_Report_${MONTH_SHORT[parseInt(month) - 1]}_${year}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       setSuccess("CSV report exported successfully!");

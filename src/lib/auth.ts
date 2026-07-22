@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET || "reiz-pulse-jwt-super-secret-key-2026-attendance-task-system-token-jwt";
+const JWT_SECRET = process.env.JWT_SECRET || "reiz-jwt-super-secret-key-2026-attendance-task-system-token-jwt";
 const secretKey = new TextEncoder().encode(JWT_SECRET);
 
 export interface TokenPayload {

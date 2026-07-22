@@ -1,4 +1,4 @@
-# REIZ Pulse
+# REIZ Panel
 
 > **Internal Employee Attendance & Task Tracking System for REIZ Media**
 
@@ -11,7 +11,7 @@
 
 ## 1. Product Overview
 
-**REIZ Pulse** is a bespoke internal web application built exclusively for **REIZ Media** employees and management. It consolidates daily attendance check-in/check-out, task management, leave applications, and monthly reporting into a single, role-aware portal.
+**REIZ Panel** is a bespoke internal web application built exclusively for **REIZ Media** employees and management. It consolidates daily attendance check-in/check-out, task management, leave applications, and monthly reporting into a single, role-aware portal.
 
 The system eliminates paper-based attendance sheets and Excel-based task trackers by providing real-time visibility for admins/managers, a streamlined daily workflow for employees, and one-click XLSX exports for payroll and compliance teams.
 
@@ -217,7 +217,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 8. Database Setup
 
-REIZ Pulse uses **MongoDB Atlas**. All Mongoose schemas automatically create indexes on first connection.
+REIZ Panel uses **MongoDB Atlas**. All Mongoose schemas automatically create indexes on first connection.
 
 1. Create a free cluster at [mongodb.com/atlas](https://mongodb.com/atlas)
 2. Whitelist your IP (or use `0.0.0.0/0` for development)
@@ -351,7 +351,7 @@ Templates are reusable: one template can be assigned to an entire department.
 
 ## 18. PWA Installation
 
-REIZ Pulse ships as a **Progressive Web App**:
+REIZ Panel ships as a **Progressive Web App**:
 
 - **Install on desktop**: Click the install icon in the Chrome/Edge address bar
 - **Install on mobile**: Use "Add to Home Screen" from the browser menu (Safari on iOS, Chrome on Android)

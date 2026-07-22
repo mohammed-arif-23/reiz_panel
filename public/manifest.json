@@ -1,6 +1,6 @@
 {
-  "name": "REIZ Pulse",
-  "short_name": "REIZ Pulse",
+  "name": "REIZ Panel",
+  "short_name": "REIZ Panel",
   "description": "Employee Attendance and Task Management Portal for REIZ Media",
   "start_url": "/",
   "display": "standalone",

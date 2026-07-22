@@ -6,7 +6,7 @@ export async function GET() {
     await connectToDatabase();
     return NextResponse.json({
       status: "ok",
-      service: "REIZ Pulse",
+      service: "REIZ Panel",
       timestamp: new Date().toISOString(),
       db: "connected",
     });

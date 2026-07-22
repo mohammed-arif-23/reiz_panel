@@ -125,7 +125,7 @@ export default function Sidebar({ user }: SidebarProps) {
           </div>
           <div>
             <h1 className="font-bold text-[#2D221E] tracking-tight text-lg">REIZ Media</h1>
-            <p className="text-[10px] font-bold text-[#B87C4C] uppercase tracking-widest">Pulse Portal</p>
+            <p className="text-[10px] font-bold text-[#B87C4C] uppercase tracking-widest">REIZ Portal</p>
           </div>
         </div>
 
