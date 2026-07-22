@@ -6,6 +6,8 @@ export async function middleware(request: NextRequest) {
   return handleRouting(request);
 }
 
+export default middleware;
+
 async function handleRouting(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
