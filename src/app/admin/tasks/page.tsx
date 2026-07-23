@@ -269,8 +269,8 @@ export default function AdminTasksBoard() {
           />
           <Button
             onClick={() => setFixedTasksModalOpen(true)}
-            className="border border-zinc-200 bg-white text-zinc-900 font-semibold shadow-sm hover:bg-zinc-100"
-            startContent={<Plus className="h-4 w-4 text-zinc-550" />}
+            variant="secondary"
+            startContent={<Plus className="h-4 w-4 text-zinc-650" />}
           >
             Manage Fixed Tasks
           </Button>
