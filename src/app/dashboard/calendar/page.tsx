@@ -546,7 +546,7 @@ export default function CalendarPage() {
             <div className="grid grid-cols-7 divide-x divide-y divide-[#E8DFD3]">
               {cells.map((cell) => {
                 if (cell.isPadding) {
-                  return <div key={cell.key} className="h-24 sm:h-28 bg-[#F5EFE6]/40 p-2" />;
+                  return <div key={cell.key} className="h-16 sm:h-28 bg-[#F5EFE6]/40 p-1.5" />;
                 }
 
                 const isToday = cell.date === todayStr;
@@ -556,35 +556,37 @@ export default function CalendarPage() {
                   <div
                     key={cell.key}
                     onClick={() => handleDayClick(cell)}
-                    className={`h-24 sm:h-28 p-2 flex flex-col justify-between cursor-pointer transition-colors ${statusStyle} ${
-                      isToday ? "ring-2 ring-inset ring-[#362722]" : ""
+                    className={`h-16 sm:h-28 p-1.5 sm:p-2.5 flex flex-col justify-between cursor-pointer transition-all duration-150 hover:opacity-90 ${statusStyle} ${
+                      isToday ? "ring-2 ring-inset ring-[#362722] shadow-inner" : ""
                     }`}
                     title={`${cell.date} — ${cell.status.replace(/_/g, " ")}`}
                   >
                     <div className="flex justify-between items-start">
                       <span
-                        className={`text-sm font-bold leading-none ${
+                        className={`text-xs sm:text-sm font-bold leading-none ${
                           isToday
-                            ? "h-6 w-6 rounded-full bg-[#362722] text-[#FAF6F0] flex items-center justify-center text-xs"
+                            ? "h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-[#362722] text-[#FAF6F0] flex items-center justify-center text-[10px] sm:text-xs"
                             : "text-[#2D221E]"
                         }`}
                       >
                         {cell.dayNum}
                       </span>
-                      <span className="text-[9px] uppercase tracking-wide font-bold opacity-80 leading-tight text-right">
+                      <span className="hidden sm:inline-block text-[9px] uppercase tracking-wider font-extrabold opacity-75">
                         {cell.status.replace(/_/g, " ")}
                       </span>
                     </div>
 
-                    <div className="space-y-1 text-left">
-                      {cell.checkIn && (
-                        <div className="text-[10px] font-semibold text-current opacity-80">
+                    <div className="flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-start gap-1">
+                      {cell.checkIn ? (
+                        <div className="text-[8px] sm:text-[10px] font-bold text-current opacity-80">
                           ↑ {formatTime(cell.checkIn)}
                         </div>
+                      ) : (
+                        <div />
                       )}
                       {(cell.tasksCount ?? 0) > 0 && (
-                        <div className="text-[9px] font-bold bg-[#362722] text-[#FAF6F0] rounded px-1.5 py-0.5 inline-block shadow-xs">
-                          {cell.tasksCount} work entries
+                        <div className="text-[8px] sm:text-[9px] font-black bg-[#362722] text-[#FAF6F0] rounded-md px-1 py-0.5 sm:px-1.5 shadow-2xs">
+                          {cell.tasksCount}<span className="hidden sm:inline"> logs</span>
                         </div>
                       )}
                     </div>
