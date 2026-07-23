@@ -4,6 +4,7 @@ import { verifyToken } from "@/lib/auth";
 import { SheetData } from "@/models/SheetData";
 import { User } from "@/models/User";
 import { SheetTemplate } from "@/models/SheetTemplate";
+import { FixedTask } from "@/models/FixedTask";
 import { getKolkataDateString } from "@/lib/date";
 
 // Helper to get or create sheet data with columnsSnapshot locking
@@ -30,13 +31,25 @@ export async function getOrCreateSheetData(userId: string, date: string) {
       throw new Error("Assigned template not found");
     }
 
+    // Fetch and map daily fixed tasks
+    const fixedTasks = await FixedTask.find({});
+    const initialTasks = fixedTasks.map((ft) => ({
+      title: ft.title,
+      description: ft.description || "",
+      category: ft.category || "General",
+      priority: ft.priority || "MEDIUM",
+      status: "NOT_STARTED",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+
     sheet = new SheetData({
       userId,
       date,
       templateId: template._id,
       columnsSnapshot: template.columns,
       data: new Map(),
-      tasks: [],
+      tasks: initialTasks,
     });
     await sheet.save();
   }

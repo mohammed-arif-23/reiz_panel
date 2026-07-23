@@ -715,16 +715,14 @@ export default function CalendarPage() {
                             value={task.status}
                             onChange={(e) => handleDayTaskStatusChange(task._id, e.target.value)}
                             className={`rounded-lg border border-[#E8DFD3] bg-[#FAF6F0] px-2 py-1 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#362722] ${
-                              task.status === "APPROVED" ? "bg-emerald-50 text-emerald-800" :
-                              task.status === "WAITING_FOR_REVIEW" ? "bg-blue-50 text-blue-800" :
-                              task.status === "IN_PROGRESS" ? "bg-amber-50 text-amber-800" :
+                              task.status === "COMPLETED" ? "bg-emerald-50 text-emerald-800" :
+                              task.status === "PENDING" ? "bg-amber-50 text-amber-800" :
                               "bg-[#FAF6F0] text-[#2D221E]"
                             }`}
                           >
-                            <option value="NOT_STARTED">Not Started</option>
-                            <option value="IN_PROGRESS">In Progress</option>
-                            <option value="WAITING_FOR_REVIEW">Waiting for Review</option>
-                            <option value="APPROVED" disabled>Approved (Locked)</option>
+                            <option value="NOT_STARTED">Not started</option>
+                            <option value="PENDING">pending</option>
+                            <option value="COMPLETED">completed</option>
                           </select>
                         </div>
                       </div>

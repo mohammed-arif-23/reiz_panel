@@ -12,7 +12,7 @@ const TaskItemSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "WAITING_FOR_REVIEW", "APPROVED"],
+    enum: ["NOT_STARTED", "PENDING", "IN_PROGRESS", "COMPLETED", "WAITING_FOR_REVIEW", "APPROVED"],
     default: "NOT_STARTED",
     required: true,
   },

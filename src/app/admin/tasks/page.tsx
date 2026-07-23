@@ -18,6 +18,15 @@ export default function AdminTasksBoard() {
   const [success, setSuccess] = useState("");
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
 
+  // Fixed Tasks State
+  const [fixedTasks, setFixedTasks] = useState<any[]>([]);
+  const [fixedTasksModalOpen, setFixedTasksModalOpen] = useState(false);
+  const [newFixedTitle, setNewFixedTitle] = useState("");
+  const [newFixedDesc, setNewFixedDesc] = useState("");
+  const [newFixedPriority, setNewFixedPriority] = useState("MEDIUM");
+  const [newFixedCategory, setNewFixedCategory] = useState("General");
+  const [fixedSubmitLoading, setFixedSubmitLoading] = useState(false);
+
   // Modal Control
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [assignTitle, setAssignTitle] = useState("");
@@ -26,6 +35,18 @@ export default function AdminTasksBoard() {
   const [assignPriority, setAssignPriority] = useState("MEDIUM");
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  const fetchFixedTasks = async () => {
+    try {
+      const res = await fetch("/api/admin/fixed-tasks");
+      if (res.ok) {
+        const data = await res.json();
+        setFixedTasks(data.fixedTasks || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchTasksAndEmployees = async () => {
     try {
@@ -52,7 +73,68 @@ export default function AdminTasksBoard() {
 
   useEffect(() => {
     fetchTasksAndEmployees();
+    fetchFixedTasks();
   }, [filterDate]);
+
+  const handleCreateFixedTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFixedTitle) return;
+
+    setFixedSubmitLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch("/api/admin/fixed-tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newFixedTitle,
+          description: newFixedDesc,
+          priority: newFixedPriority,
+          category: newFixedCategory,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to create fixed task.");
+      } else {
+        setSuccess("Daily fixed task created and auto-assigned for future check-ins!");
+        setNewFixedTitle("");
+        setNewFixedDesc("");
+        setNewFixedPriority("MEDIUM");
+        setNewFixedCategory("General");
+        await fetchFixedTasks();
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to add fixed task.");
+    } finally {
+      setFixedSubmitLoading(false);
+    }
+  };
+
+  const handleDeleteFixedTask = async (id: string) => {
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/admin/fixed-tasks/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to delete fixed task.");
+      } else {
+        setSuccess("Fixed task deleted successfully.");
+        await fetchFixedTasks();
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete fixed task.");
+    }
+  };
 
   const handleBulkAssign = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,7 +243,7 @@ export default function AdminTasksBoard() {
   }
 
   const reviewTasks = tasks.filter((t) => t.status === "WAITING_FOR_REVIEW");
-  const inProgressTasks = tasks.filter((t) => t.status === "IN_PROGRESS" || t.status === "NOT_STARTED");
+  const inProgressTasks = tasks.filter((t) => t.status === "IN_PROGRESS" || t.status === "PENDING" || t.status === "NOT_STARTED");
   const completedTasks = tasks.filter((t) => t.status === "COMPLETED");
   const approvedTasks = tasks.filter((t) => t.status === "APPROVED");
 
@@ -182,6 +264,13 @@ export default function AdminTasksBoard() {
             onChange={(e) => setFilterDate(e.target.value)}
             className="w-44 h-11"
           />
+          <Button
+            onClick={() => setFixedTasksModalOpen(true)}
+            className="border border-zinc-200 bg-white text-zinc-900 font-semibold shadow-sm hover:bg-zinc-100"
+            startContent={<Plus className="h-4 w-4 text-zinc-550" />}
+          >
+            Manage Fixed Tasks
+          </Button>
           <Button
             onClick={onOpen}
             className="bg-zinc-900 text-white font-semibold shadow-sm hover:bg-zinc-800"
@@ -422,6 +511,117 @@ export default function AdminTasksBoard() {
               </Button>
             </ModalFooter>
           </form>
+        </ModalContent>
+      </Modal>
+
+      {/* Daily Fixed Tasks Management Modal */}
+      <Modal isOpen={fixedTasksModalOpen} onOpenChange={setFixedTasksModalOpen} size="lg">
+        <ModalContent>
+          <div className="p-6 space-y-6 text-zinc-900">
+            <div className="flex justify-between items-center border-b border-zinc-200 pb-3">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-900">Manage Daily Fixed Tasks</h2>
+                <p className="text-xs text-zinc-500 font-medium">These tasks are automatically generated for all employees daily.</p>
+              </div>
+              <button
+                onClick={() => setFixedTasksModalOpen(false)}
+                className="text-zinc-450 hover:text-zinc-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* List of current fixed tasks */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Current Daily Fixed Tasks</h3>
+              {fixedTasks.length === 0 ? (
+                <p className="text-xs text-zinc-400 italic">No daily fixed tasks defined yet.</p>
+              ) : (
+                <div className="border border-zinc-200 rounded-xl divide-y divide-zinc-200 bg-white overflow-hidden max-h-[220px] overflow-y-auto">
+                  {fixedTasks.map((task) => (
+                    <div key={task._id} className="p-3 flex items-center justify-between gap-3 hover:bg-zinc-50 transition-colors">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-zinc-800">{task.title}</span>
+                          <span className={`text-[9px] font-bold px-1.5 rounded-md ${
+                            task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
+                            task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                            "bg-zinc-100 text-zinc-600 border border-zinc-200"
+                          }`}>
+                            {task.priority}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-[10px] text-zinc-400 leading-normal font-medium">{task.description}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteFixedTask(task._id)}
+                        className="text-red-650 hover:text-red-800 text-[11px] font-bold"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Form to create new daily fixed task */}
+            <form onSubmit={handleCreateFixedTask} className="border-t border-zinc-200 pt-4 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Add New Daily Fixed Task</h3>
+              
+              <Input
+                label="Task Title *"
+                placeholder="e.g. Log client report updates"
+                value={newFixedTitle}
+                onChange={(e) => setNewFixedTitle(e.target.value)}
+                required
+              />
+
+              <Textarea
+                label="Instructions / Description (Optional)"
+                placeholder="e.g. Ensure all client sheets are filled before EOD"
+                value={newFixedDesc}
+                onChange={(e) => setNewFixedDesc(e.target.value)}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Category"
+                  placeholder="e.g. General, Design"
+                  value={newFixedCategory}
+                  onChange={(e) => setNewFixedCategory(e.target.value)}
+                />
+
+                <Select
+                  label="Priority"
+                  value={newFixedPriority}
+                  onChange={(e) => setNewFixedPriority(e.target.value)}
+                >
+                  <SelectItem value="LOW">Low</SelectItem>
+                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                  <SelectItem value="HIGH">High</SelectItem>
+                </Select>
+              </div>
+
+              <div className="flex gap-2 justify-end border-t border-zinc-200 pt-3.5">
+                <Button
+                  variant="outline"
+                  onClick={() => setFixedTasksModalOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={fixedSubmitLoading}
+                  className="bg-zinc-950 text-white font-bold"
+                >
+                  Create Fixed Task
+                </Button>
+              </div>
+            </form>
+          </div>
         </ModalContent>
       </Modal>
     </div>
