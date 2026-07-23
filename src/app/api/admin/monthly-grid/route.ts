@@ -5,6 +5,7 @@ import { User } from "@/models/User";
 import { Attendance } from "@/models/Attendance";
 import { SheetData } from "@/models/SheetData";
 import { SheetTemplate } from "@/models/SheetTemplate";
+import { Holiday } from "@/models/Holiday";
 import { getDaysInMonth } from "@/lib/date";
 
 export async function GET(request: NextRequest) {
@@ -47,8 +48,8 @@ export async function GET(request: NextRequest) {
     const startStr = days[0];
     const endStr = days[days.length - 1];
 
-    // Fetch attendance and sheet data in bulk
-    const [attendances, sheets] = await Promise.all([
+    // Fetch attendance, sheet data, and holidays in bulk
+    const [attendances, sheets, holidays] = await Promise.all([
       Attendance.find({
         userId,
         date: { $gte: startStr, $lte: endStr },
@@ -57,11 +58,15 @@ export async function GET(request: NextRequest) {
         userId,
         date: { $gte: startStr, $lte: endStr },
       }).populate("templateId"),
+      Holiday.find({
+        date: { $gte: startStr, $lte: endStr },
+      }),
     ]);
 
     // Create lookup maps
     const attendanceMap = new Map(attendances.map((a) => [a.date, a]));
     const sheetMap = new Map(sheets.map((s) => [s.date, s]));
+    const holidayMap = new Map(holidays.map((h) => [h.date, h]));
 
     // Determine the columns of the sheet.
     let columns = [];
@@ -78,6 +83,16 @@ export async function GET(request: NextRequest) {
     const rows = days.map((dateStr) => {
       const attendance = attendanceMap.get(dateStr);
       const sheet = sheetMap.get(dateStr);
+      const holiday = holidayMap.get(dateStr);
+
+      // Determine default status if no attendance checked in
+      let defaultStatus = "ABSENT";
+      const dateObj = new Date(dateStr + "T00:00:00");
+      const dayOfWeek = dateObj.getDay();
+
+      if (holiday || dayOfWeek === 0) {
+        defaultStatus = "HOLIDAY";
+      }
 
       // Support multiple entries stored in Map as "entries" key
       const storedEntries = sheet?.data?.get("entries");
@@ -89,7 +104,7 @@ export async function GET(request: NextRequest) {
         checkOut: attendance?.checkOut || null,
         workDuration: attendance?.workDurationMinutes || 0,
         breakDuration: attendance?.breakDurationMinutes || 0,
-        status: attendance?.status || "ABSENT",
+        status: attendance?.status || defaultStatus,
         tasksCount: (sheet?.tasks?.length || 0) + entriesArray.length,
         eodSummary: sheet?.eodSummary || "",
         entries: entriesArray,

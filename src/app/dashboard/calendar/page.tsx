@@ -423,7 +423,7 @@ export default function CalendarPage() {
     const isWeekend = dayOfWeek === 0;
 
     const defaultStatus: DayRecord["status"] =
-      new Date(dateStr) > today ? "ABSENT" : isWeekend ? "HOLIDAY" : "ABSENT";
+      gridRec?.status === "HOLIDAY" || isWeekend ? "HOLIDAY" : "ABSENT";
 
     const entriesCount = Array.isArray(gridRec?.entries) ? gridRec.entries.length : (rec?.tasksCount ?? 0);
 
