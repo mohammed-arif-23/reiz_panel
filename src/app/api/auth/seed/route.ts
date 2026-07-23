@@ -84,10 +84,25 @@ const TEMPLATES_DATA = [
 // Holiday definitions
 // ---------------------------------------------------------------------------
 const HOLIDAYS_DATA = [
-  { date: "2026-01-26", name: "Republic Day",             isOptional: false },
-  { date: "2026-08-15", name: "Independence Day",         isOptional: false },
-  { date: "2026-10-02", name: "Gandhi Jayanti",           isOptional: false },
-  { date: "2026-03-15", name: "Company Foundation Day",   isOptional: true  },
+  { date: "2026-01-26", name: "Republic Day",                             isOptional: false },
+  { date: "2026-03-15", name: "Company Foundation Day",                   isOptional: true  },
+  { date: "2026-08-15", name: "Independence Day / Parsi New Year's Day",   isOptional: false },
+  { date: "2026-08-26", name: "Milad-un-Nabi (Prophet's Birthday) / Onam",isOptional: false },
+  { date: "2026-08-28", name: "Raksha Bandhan",                           isOptional: true  },
+  { date: "2026-09-04", name: "Krishna Jayanthi / Janmashtami",           isOptional: false },
+  { date: "2026-09-14", name: "Vinayakar Chathurthi / Ganesh Chaturthi",   isOptional: false },
+  { date: "2026-10-02", name: "Mahatma Gandhi's Birthday",                isOptional: false },
+  { date: "2026-10-19", name: "Ayudha Poojai / Maha Navami",               isOptional: false },
+  { date: "2026-10-20", name: "Vijaya Dasami / Dussehra",                 isOptional: false },
+  { date: "2026-10-26", name: "Maharishi Valmiki's Birthday",             isOptional: true  },
+  { date: "2026-10-29", name: "Karaka Chaturthi (Karwa Chouth)",           isOptional: true  },
+  { date: "2026-11-08", name: "Deepavali / Diwali",                       isOptional: false },
+  { date: "2026-11-09", name: "Govardhan Puja",                           isOptional: true  },
+  { date: "2026-11-11", name: "Bhai Duj / Balipratipada",                 isOptional: true  },
+  { date: "2026-11-15", name: "Chhath Puja / Surya Shashthi",             isOptional: true  },
+  { date: "2026-11-24", name: "Guru Nanak's Birthday",                     isOptional: false },
+  { date: "2026-12-24", name: "Christmas Eve",                             isOptional: true  },
+  { date: "2026-12-25", name: "Christmas Day",                             isOptional: false },
 ];
 
 // ---------------------------------------------------------------------------

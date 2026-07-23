@@ -420,7 +420,7 @@ export default function CalendarPage() {
     const gridRec = gridMap.get(dateStr);
 
     const dayOfWeek = new Date(year, month, d).getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isWeekend = dayOfWeek === 0;
 
     const defaultStatus: DayRecord["status"] =
       new Date(dateStr) > today ? "ABSENT" : isWeekend ? "HOLIDAY" : "ABSENT";
