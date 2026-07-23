@@ -5,6 +5,7 @@ import { SheetTemplate } from "@/models/SheetTemplate";
 import { SheetData } from "@/models/SheetData";
 import { Holiday } from "@/models/Holiday";
 import { AuditLog } from "@/models/AuditLog";
+import { FixedTask } from "@/models/FixedTask";
 import { hashPassword } from "@/lib/bcrypt";
 
 const DEFAULT_PASSWORD = "reiz2026";
@@ -370,12 +371,52 @@ export async function GET(request: NextRequest) {
     }
 
     // -----------------------------------------------------------------------
-    // 6. Audit log
+    // 6. Seed Daily Fixed Tasks
+    // -----------------------------------------------------------------------
+    const abbasUser = await User.findOne({ email: "contact.mohammedabbas1308@gmail.com" });
+    const gowthamUser = await User.findOne({ email: "gowthameditz25@gmail.com" });
+    const prasannaUser = await User.findOne({ email: "rajaprasanna07@gmail.com" });
+    const divyaUser = await User.findOne({ email: "divyabharathi020100@gmail.com" });
+
+    const fixedTasksData: any[] = [];
+
+    if (abbasUser) {
+      for (let i = 1; i <= 5; i++) {
+        fixedTasksData.push({ title: `Video ${i}`, category: "Video Editing", assignedUserId: abbasUser._id.toString(), priority: "MEDIUM" });
+      }
+    }
+    if (gowthamUser) {
+      for (let i = 1; i <= 4; i++) {
+        fixedTasksData.push({ title: `Video ${i}`, category: "Video Editing", assignedUserId: gowthamUser._id.toString(), priority: "MEDIUM" });
+      }
+    }
+    if (prasannaUser) {
+      for (let i = 1; i <= 3; i++) {
+        fixedTasksData.push({ title: `Video ${i}`, category: "Video Editing", assignedUserId: prasannaUser._id.toString(), priority: "MEDIUM" });
+      }
+    }
+    if (divyaUser) {
+      for (let i = 1; i <= 7; i++) {
+        fixedTasksData.push({ title: `Content ${i}`, category: "Content Writing", assignedUserId: divyaUser._id.toString(), priority: "MEDIUM" });
+      }
+    }
+
+    const idsToClear = [abbasUser?._id, gowthamUser?._id, prasannaUser?._id, divyaUser?._id].filter(Boolean).map(id => id!.toString());
+    await FixedTask.deleteMany({ assignedUserId: { $in: idsToClear } });
+
+    let seededFixedTasksCount = 0;
+    if (fixedTasksData.length > 0) {
+      const result = await FixedTask.insertMany(fixedTasksData);
+      seededFixedTasksCount = result.length;
+    }
+
+    // -----------------------------------------------------------------------
+    // 7. Audit log
     // -----------------------------------------------------------------------
     await AuditLog.create({
       userId:    upsertedUsers[0]._id,
       action:    "DB_SEED",
-      details:   "Database seeded with users, templates, sample sheet data, and holidays",
+      details:   `Database seeded with users, templates, holidays, and ${seededFixedTasksCount} daily fixed tasks`,
       ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1",
     });
 
