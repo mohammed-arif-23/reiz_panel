@@ -7,7 +7,7 @@ import { Holiday } from "@/models/Holiday";
 import { AuditLog } from "@/models/AuditLog";
 import { hashPassword } from "@/lib/bcrypt";
 
-const DEFAULT_PASSWORD = "reizpulse2026";
+const DEFAULT_PASSWORD = "reiz2026";
 
 // ---------------------------------------------------------------------------
 // Template definitions (spec-aligned; only text/number/select column types)
@@ -98,13 +98,14 @@ export async function GET(request: NextRequest) {
     await connectToDatabase();
 
     const force = new URL(request.url).searchParams.get("force") === "true";
+    const update = new URL(request.url).searchParams.get("update") === "true";
 
     // Guard against accidental re-seeding
-    if (!force) {
+    if (!force && !update) {
       const superAdminExists = await User.findOne({ role: "SUPER_ADMIN" });
       if (superAdminExists) {
         return NextResponse.json({
-          message: "Database already seeded. Use /api/auth/seed?force=true to re-seed.",
+          message: "Database already seeded. Use /api/auth/seed?force=true to re-seed or ?update=true to update/add users without wiping.",
         });
       }
     }
@@ -192,6 +193,46 @@ export async function GET(request: NextRequest) {
       {
         name:               "Content Writer",
         email:              "employee2@reizmedia.com",
+        password:           hashed,
+        role:               "EMPLOYEE",
+        designation:        "Content Writer",
+        department:         "Content",
+        status:             "ACTIVE",
+        assignedTemplateId: contentWriterTemplate._id,
+      },
+      {
+        name:               "Raja Prasanna",
+        email:              "rajaprasanna07@gmail.com",
+        password:           hashed,
+        role:               "EMPLOYEE",
+        designation:        "Video Editor",
+        department:         "Production",
+        status:             "ACTIVE",
+        assignedTemplateId: videoEditorTemplate._id,
+      },
+      {
+        name:               "Mohammed Arif",
+        email:              "mohammedarif2303@gmail.com",
+        password:           hashed,
+        role:               "ADMIN",
+        designation:        "Admin",
+        department:         "Management",
+        status:             "ACTIVE",
+        assignedTemplateId: generalTemplate._id,
+      },
+      {
+        name:               "Jaissy V",
+        email:              "vjaissy@gmail.com",
+        password:           hashed,
+        role:               "EMPLOYEE",
+        designation:        "Content Writer",
+        department:         "Content",
+        status:             "ACTIVE",
+        assignedTemplateId: contentWriterTemplate._id,
+      },
+      {
+        name:               "Divya Bharathi",
+        email:              "divyabharathi020100@gmail.com",
         password:           hashed,
         role:               "EMPLOYEE",
         designation:        "Content Writer",
