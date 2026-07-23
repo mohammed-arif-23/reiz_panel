@@ -25,7 +25,7 @@ export default function AdminTasksBoard() {
   const [newFixedDesc, setNewFixedDesc] = useState("");
   const [newFixedPriority, setNewFixedPriority] = useState("MEDIUM");
   const [newFixedCategory, setNewFixedCategory] = useState("General");
-  const [newFixedAssignedDesignation, setNewFixedAssignedDesignation] = useState("ALL");
+  const [newFixedAssignedUserId, setNewFixedAssignedUserId] = useState("ALL");
   const [fixedSubmitLoading, setFixedSubmitLoading] = useState(false);
 
   // Modal Control
@@ -94,7 +94,7 @@ export default function AdminTasksBoard() {
           description: newFixedDesc,
           priority: newFixedPriority,
           category: newFixedCategory,
-          assignedDesignation: newFixedAssignedDesignation,
+          assignedUserId: newFixedAssignedUserId,
         }),
       });
 
@@ -107,7 +107,7 @@ export default function AdminTasksBoard() {
         setNewFixedDesc("");
         setNewFixedPriority("MEDIUM");
         setNewFixedCategory("General");
-        setNewFixedAssignedDesignation("ALL");
+        setNewFixedAssignedUserId("ALL");
         await fetchFixedTasks();
       }
     } catch (err) {
@@ -637,34 +637,38 @@ export default function AdminTasksBoard() {
                 <p className="text-xs text-zinc-400 italic">No daily fixed tasks defined yet.</p>
               ) : (
                 <div className="border border-zinc-200 rounded-xl divide-y divide-zinc-200 bg-white overflow-hidden max-h-[220px] overflow-y-auto">
-                  {fixedTasks.map((task) => (
-                    <div key={task._id} className="p-3 flex items-center justify-between gap-3 hover:bg-zinc-50 transition-colors">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-bold text-zinc-800">{task.title}</span>
-                          <span className={`text-[9px] font-bold px-1.5 rounded-md ${
-                            task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
-                            task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
-                            "bg-zinc-100 text-zinc-650 border border-zinc-200"
-                          }`}>
-                            {task.priority}
-                          </span>
-                          <span className="text-[9px] font-bold bg-[#FAF6F0] border border-[#E8DFD3] text-[#8C7A6B] px-1.5 py-0.5 rounded-md">
-                            Role: {task.assignedDesignation === "ALL" ? "All" : task.assignedDesignation}
-                          </span>
+                  {fixedTasks.map((task) => {
+                    const emp = employees.find((e) => e._id === task.assignedUserId);
+                    const displayName = task.assignedUserId === "ALL" ? "All Employees" : (emp ? emp.name : "Unknown Employee");
+                    return (
+                      <div key={task._id} className="p-3 flex items-center justify-between gap-3 hover:bg-zinc-50 transition-colors">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-zinc-800">{task.title}</span>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                              task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
+                              task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                              "bg-zinc-100 text-zinc-650 border border-zinc-200"
+                            }`}>
+                              {task.priority}
+                            </span>
+                            <span className="text-[9px] font-bold bg-[#FAF6F0] border border-[#E8DFD3] text-[#8C7A6B] px-1.5 py-0.5 rounded-md">
+                              Assignee: {displayName}
+                            </span>
+                          </div>
+                          {task.description && (
+                            <p className="text-[10px] text-zinc-400 leading-normal font-medium">{task.description}</p>
+                          )}
                         </div>
-                        {task.description && (
-                          <p className="text-[10px] text-zinc-400 leading-normal font-medium">{task.description}</p>
-                        )}
+                        <button
+                          onClick={() => handleDeleteFixedTask(task._id)}
+                          className="text-red-650 hover:text-red-800 text-[11px] font-bold"
+                        >
+                          Delete
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleDeleteFixedTask(task._id)}
-                        className="text-red-650 hover:text-red-800 text-[11px] font-bold"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -690,14 +694,14 @@ export default function AdminTasksBoard() {
 
               <div className="grid grid-cols-3 gap-4">
                 <Select
-                  label="Target Designation"
-                  value={newFixedAssignedDesignation}
-                  onChange={(e) => setNewFixedAssignedDesignation(e.target.value)}
+                  label="Assign to Employee"
+                  value={newFixedAssignedUserId}
+                  onChange={(e) => setNewFixedAssignedUserId(e.target.value)}
                 >
                   <SelectItem value="ALL">All Employees</SelectItem>
-                  <SelectItem value="Video Editor">Video Editor</SelectItem>
-                  <SelectItem value="Content Writer">Content Writer</SelectItem>
-                  <SelectItem value="Graphic Designer">Graphic Designer</SelectItem>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp._id} value={emp._id}>{emp.name}</SelectItem>
+                  ))}
                 </Select>
 
                 <Input

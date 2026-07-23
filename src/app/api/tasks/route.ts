@@ -31,11 +31,11 @@ export async function getOrCreateSheetData(userId: string, date: string) {
       throw new Error("Assigned template not found");
     }
 
-    // Fetch and map daily fixed tasks matching user designation or ALL
+    // Fetch and map daily fixed tasks matching user ID or ALL
     const fixedTasks = await FixedTask.find({
       $or: [
-        { assignedDesignation: "ALL" },
-        { assignedDesignation: user.designation },
+        { assignedUserId: "ALL" },
+        { assignedUserId: user._id.toString() },
       ],
     });
     const initialTasks = fixedTasks.map((ft) => ({
