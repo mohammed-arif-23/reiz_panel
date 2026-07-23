@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, priority = "MEDIUM", category = "General" } = body;
+    const { title, description, priority = "MEDIUM", category = "General", assignedDesignation = "ALL" } = body;
 
     if (!title) {
       return NextResponse.json({ error: "Task title is required" }, { status: 400 });
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
       description: description || "",
       priority,
       category,
+      assignedDesignation,
     });
 
     // Create Audit Log

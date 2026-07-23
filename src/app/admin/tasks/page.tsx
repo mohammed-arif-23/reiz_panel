@@ -25,6 +25,7 @@ export default function AdminTasksBoard() {
   const [newFixedDesc, setNewFixedDesc] = useState("");
   const [newFixedPriority, setNewFixedPriority] = useState("MEDIUM");
   const [newFixedCategory, setNewFixedCategory] = useState("General");
+  const [newFixedAssignedDesignation, setNewFixedAssignedDesignation] = useState("ALL");
   const [fixedSubmitLoading, setFixedSubmitLoading] = useState(false);
 
   // Modal Control
@@ -93,6 +94,7 @@ export default function AdminTasksBoard() {
           description: newFixedDesc,
           priority: newFixedPriority,
           category: newFixedCategory,
+          assignedDesignation: newFixedAssignedDesignation,
         }),
       });
 
@@ -105,6 +107,7 @@ export default function AdminTasksBoard() {
         setNewFixedDesc("");
         setNewFixedPriority("MEDIUM");
         setNewFixedCategory("General");
+        setNewFixedAssignedDesignation("ALL");
         await fetchFixedTasks();
       }
     } catch (err) {
@@ -296,49 +299,73 @@ export default function AdminTasksBoard() {
       {/* Task board columns */}
       <div className="grid gap-6 lg:grid-cols-4">
         {/* Waiting Review Column */}
-        <Card className="border border-zinc-200 shadow-sm bg-zinc-50/50">
-          <CardHeader className="pb-2 border-b border-zinc-200/60 bg-zinc-50 flex justify-between items-center px-4 py-3">
-            <h3 className="font-bold text-zinc-900 text-sm flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+        <Card className="border border-purple-100 shadow-sm bg-purple-50/10">
+          <CardHeader className="pb-2 border-b border-purple-100/60 bg-purple-50/40 flex justify-between items-center px-4 py-3">
+            <h3 className="font-extrabold text-purple-900 text-sm flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-purple-550 animate-pulse" />
               <span>Review Needed</span>
             </h3>
-            <span className="text-xs font-bold text-zinc-550 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md">
               {reviewTasks.length}
             </span>
           </CardHeader>
           <CardBody className="p-3 space-y-3 overflow-y-auto max-h-[600px]">
             {reviewTasks.length === 0 ? (
-              <p className="text-xs text-zinc-400 text-center py-6 font-medium">No tasks submitted for review.</p>
+              <p className="text-xs text-zinc-400 text-center py-8 font-medium">No tasks submitted for review.</p>
             ) : (
               reviewTasks.map((task) => (
-                <div key={task._id} className="p-3 bg-white border border-zinc-200 rounded-xl space-y-2.5 shadow-sm">
-                  <div>
+                <div key={task._id} className="p-4 bg-white border border-zinc-200 rounded-2xl space-y-3 shadow-xs hover:shadow-sm transition-all">
+                  <div className="space-y-2">
                     <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-bold text-zinc-900 text-sm">{task.title}</h4>
-                      <span className="text-[10px] font-semibold bg-purple-50 border border-purple-100 text-purple-700 rounded px-1.5 py-0.5 whitespace-nowrap">
+                      <h4 className="font-extrabold text-zinc-900 text-sm leading-tight">{task.title}</h4>
+                      <span className="text-[9px] font-black uppercase tracking-wider bg-purple-50 border border-purple-100 text-purple-700 rounded-md px-2 py-0.5 whitespace-nowrap">
                         Review
                       </span>
                     </div>
-                    <p className="text-[11px] text-zinc-400 font-bold mt-0.5">By: {task.userName}</p>
-                    {task.description && <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed font-semibold">{task.description}</p>}
+                    {task.description && <p className="text-xs text-zinc-550 leading-relaxed font-medium">{task.description}</p>}
+                    
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {task.priority && (
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                          task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
+                          task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                          "bg-zinc-100 text-zinc-650 border border-zinc-200"
+                        }`}>
+                          {task.priority}
+                        </span>
+                      )}
+                      {task.category && (
+                        <span className="text-[9px] font-bold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-md border border-zinc-200">
+                          {task.category}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex gap-2 justify-end pt-1.5 border-t border-zinc-100">
-                    <Button
-                      variant="outline"
-                      className="px-2.5 py-1 text-[11px] font-bold text-zinc-650 h-7 border-zinc-250"
-                      startContent={<RefreshCw className="h-3 w-3" />}
-                      onClick={() => handleRequestRevision(task._id)}
-                    >
-                      Revision
-                    </Button>
-                    <Button
-                      className="px-2.5 py-1 text-[11px] font-bold text-white h-7"
-                      startContent={<CheckCircle className="h-3 w-3" />}
-                      onClick={() => handleApproveTask(task._id)}
-                    >
-                      Approve
-                    </Button>
+                  <div className="flex items-center justify-between pt-2.5 border-t border-zinc-100">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-6 w-6 rounded-full bg-purple-100 border border-purple-200 flex items-center justify-center text-[10px] font-extrabold text-purple-800 uppercase">
+                        {task.userName ? task.userName.charAt(0) : "E"}
+                      </div>
+                      <span className="text-[10px] font-extrabold text-zinc-700 truncate max-w-[80px]">{task.userName}</span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Button
+                        variant="outline"
+                        className="px-2.5 py-1 text-[10px] font-bold text-zinc-650 h-7 border-zinc-250 rounded-lg"
+                        startContent={<RefreshCw className="h-3 w-3" />}
+                        onClick={() => handleRequestRevision(task._id)}
+                      >
+                        Revision
+                      </Button>
+                      <Button
+                        className="px-2.5 py-1 text-[10px] font-bold text-white h-7 rounded-lg"
+                        startContent={<CheckCircle className="h-3 w-3" />}
+                        onClick={() => handleApproveTask(task._id)}
+                      >
+                        Approve
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -347,25 +374,59 @@ export default function AdminTasksBoard() {
         </Card>
 
         {/* In Progress Column */}
-        <Card className="border border-zinc-200 shadow-sm bg-zinc-50/50">
-          <CardHeader className="pb-2 border-b border-zinc-200/60 bg-zinc-50 flex justify-between items-center px-4 py-3">
-            <h3 className="font-bold text-zinc-900 text-sm flex items-center gap-2">
+        <Card className="border border-amber-100 shadow-sm bg-amber-50/10">
+          <CardHeader className="pb-2 border-b border-amber-100/60 bg-amber-50/40 flex justify-between items-center px-4 py-3">
+            <h3 className="font-extrabold text-amber-900 text-sm flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
               <span>In Progress / Logged</span>
             </h3>
-            <span className="text-xs font-bold text-zinc-550 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md">
               {inProgressTasks.length}
             </span>
           </CardHeader>
           <CardBody className="p-3 space-y-3 overflow-y-auto max-h-[600px]">
             {inProgressTasks.length === 0 ? (
-              <p className="text-xs text-zinc-400 text-center py-6 font-medium">No tasks in progress.</p>
+              <p className="text-xs text-zinc-400 text-center py-8 font-medium">No tasks in progress.</p>
             ) : (
               inProgressTasks.map((task) => (
-                <div key={task._id} className="p-3 bg-white border border-zinc-200 rounded-xl space-y-1 shadow-sm">
-                  <h4 className="font-bold text-zinc-900 text-sm">{task.title}</h4>
-                  <p className="text-[10px] text-zinc-400 font-bold">Assigned: {task.userName}</p>
-                  {task.description && <p className="text-xs text-zinc-500 mt-1 leading-relaxed font-semibold">{task.description}</p>}
+                <div key={task._id} className="p-4 bg-white border border-zinc-200 rounded-2xl space-y-3 shadow-xs hover:shadow-sm transition-all">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="font-extrabold text-zinc-900 text-sm leading-tight">{task.title}</h4>
+                      <span className={`text-[9px] font-black uppercase tracking-wider rounded-md px-2 py-0.5 whitespace-nowrap ${
+                        task.status === "PENDING" ? "bg-amber-100 text-amber-800 border border-amber-200" :
+                        task.status === "IN_PROGRESS" ? "bg-blue-50 text-blue-700 border border-blue-100" :
+                        "bg-zinc-100 text-zinc-500 border border-zinc-200"
+                      }`}>
+                        {task.status === "NOT_STARTED" ? "Not started" : task.status.toLowerCase()}
+                      </span>
+                    </div>
+                    {task.description && <p className="text-xs text-zinc-550 leading-relaxed font-medium">{task.description}</p>}
+                    
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {task.priority && (
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                          task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
+                          task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                          "bg-zinc-100 text-zinc-650 border border-zinc-200"
+                        }`}>
+                          {task.priority}
+                        </span>
+                      )}
+                      {task.category && (
+                        <span className="text-[9px] font-bold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-md border border-zinc-200">
+                          {task.category}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 pt-2.5 border-t border-zinc-100">
+                    <div className="h-6 w-6 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center text-[10px] font-extrabold text-amber-800 uppercase">
+                      {task.userName ? task.userName.charAt(0) : "E"}
+                    </div>
+                    <span className="text-[10px] font-extrabold text-zinc-700 truncate">{task.userName}</span>
+                  </div>
                 </div>
               ))
             )}
@@ -373,25 +434,55 @@ export default function AdminTasksBoard() {
         </Card>
 
         {/* Completed Column */}
-        <Card className="border border-zinc-200 shadow-sm bg-zinc-50/50">
-          <CardHeader className="pb-2 border-b border-zinc-200/60 bg-zinc-50 flex justify-between items-center px-4 py-3">
-            <h3 className="font-bold text-zinc-900 text-sm flex items-center gap-2">
+        <Card className="border border-emerald-100 shadow-sm bg-emerald-50/10">
+          <CardHeader className="pb-2 border-b border-emerald-100/60 bg-emerald-50/40 flex justify-between items-center px-4 py-3">
+            <h3 className="font-extrabold text-emerald-905 text-sm flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
               <span>Completed Log</span>
             </h3>
-            <span className="text-xs font-bold text-zinc-550 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-md">
               {completedTasks.length}
             </span>
           </CardHeader>
           <CardBody className="p-3 space-y-3 overflow-y-auto max-h-[600px]">
             {completedTasks.length === 0 ? (
-              <p className="text-xs text-zinc-400 text-center py-6 font-medium">No completed tasks yet.</p>
+              <p className="text-xs text-zinc-400 text-center py-8 font-medium">No completed tasks yet.</p>
             ) : (
               completedTasks.map((task) => (
-                <div key={task._id} className="p-3 bg-white border border-zinc-200 rounded-xl space-y-1 shadow-sm">
-                  <h4 className="font-bold text-zinc-900 text-sm">{task.title}</h4>
-                  <p className="text-[10px] text-zinc-450 font-bold">Done by: {task.userName}</p>
-                  {task.description && <p className="text-xs text-zinc-500 mt-1 leading-relaxed font-semibold">{task.description}</p>}
+                <div key={task._id} className="p-4 bg-white border border-zinc-200 rounded-2xl space-y-3 shadow-xs hover:shadow-sm transition-all border-emerald-200 bg-emerald-50/5">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="font-extrabold text-zinc-900 text-sm leading-tight">{task.title}</h4>
+                      <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-md px-2 py-0.5 whitespace-nowrap">
+                        Completed
+                      </span>
+                    </div>
+                    {task.description && <p className="text-xs text-zinc-550 leading-relaxed font-medium">{task.description}</p>}
+                    
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {task.priority && (
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                          task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
+                          task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                          "bg-zinc-100 text-zinc-650 border border-zinc-200"
+                        }`}>
+                          {task.priority}
+                        </span>
+                      )}
+                      {task.category && (
+                        <span className="text-[9px] font-bold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-md border border-zinc-200">
+                          {task.category}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 pt-2.5 border-t border-zinc-100">
+                    <div className="h-6 w-6 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-[10px] font-extrabold text-emerald-800 uppercase">
+                      {task.userName ? task.userName.charAt(0) : "E"}
+                    </div>
+                    <span className="text-[10px] font-extrabold text-zinc-700 truncate">{task.userName}</span>
+                  </div>
                 </div>
               ))
             )}
@@ -401,25 +492,33 @@ export default function AdminTasksBoard() {
         {/* Approved Column */}
         <Card className="border border-zinc-200 shadow-sm bg-zinc-50/50">
           <CardHeader className="pb-2 border-b border-zinc-200/60 bg-zinc-50 flex justify-between items-center px-4 py-3">
-            <h3 className="font-bold text-zinc-900 text-sm flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+            <h3 className="font-extrabold text-zinc-900 text-sm flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-zinc-400" />
               <span>Approved Feed</span>
             </h3>
-            <span className="text-xs font-bold text-zinc-555 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-zinc-550 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
               {approvedTasks.length}
             </span>
           </CardHeader>
           <CardBody className="p-3 space-y-3 overflow-y-auto max-h-[600px]">
             {approvedTasks.length === 0 ? (
-              <p className="text-xs text-zinc-400 text-center py-6 font-medium">No approved tasks yet.</p>
+              <p className="text-xs text-zinc-400 text-center py-8 font-medium">No approved tasks yet.</p>
             ) : (
               approvedTasks.map((task) => (
-                <div key={task._id} className="p-3 bg-white border border-zinc-200 rounded-xl space-y-1 shadow-sm opacity-80 border-green-200 bg-green-50/10">
-                  <h4 className="font-bold text-zinc-900 text-sm flex items-center gap-1.5">
-                    <CheckCircle className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
-                    <span className="line-through decoration-zinc-400">{task.title}</span>
-                  </h4>
-                  <p className="text-[10px] text-zinc-400 font-bold">User: {task.userName}</p>
+                <div key={task._id} className="p-4 bg-white border border-zinc-100 rounded-2xl space-y-2.5 shadow-xs opacity-75 border-zinc-200 bg-zinc-50/20">
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-zinc-800 text-xs flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+                      <span className="line-through decoration-zinc-400">{task.title}</span>
+                    </h4>
+                    {task.description && <p className="text-[11px] text-zinc-450 leading-relaxed font-semibold italic">{task.description}</p>}
+                  </div>
+                  <div className="flex items-center gap-1.5 pt-2 border-t border-zinc-100">
+                    <div className="h-5 w-5 rounded-full bg-zinc-200 flex items-center justify-center text-[9px] font-extrabold text-zinc-600 uppercase">
+                      {task.userName ? task.userName.charAt(0) : "E"}
+                    </div>
+                    <span className="text-[9px] font-extrabold text-zinc-500 truncate">{task.userName}</span>
+                  </div>
                 </div>
               ))
             )}
@@ -541,14 +640,17 @@ export default function AdminTasksBoard() {
                   {fixedTasks.map((task) => (
                     <div key={task._id} className="p-3 flex items-center justify-between gap-3 hover:bg-zinc-50 transition-colors">
                       <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-bold text-zinc-800">{task.title}</span>
                           <span className={`text-[9px] font-bold px-1.5 rounded-md ${
                             task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
                             task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
-                            "bg-zinc-100 text-zinc-600 border border-zinc-200"
+                            "bg-zinc-100 text-zinc-650 border border-zinc-200"
                           }`}>
                             {task.priority}
+                          </span>
+                          <span className="text-[9px] font-bold bg-[#FAF6F0] border border-[#E8DFD3] text-[#8C7A6B] px-1.5 py-0.5 rounded-md">
+                            Role: {task.assignedDesignation === "ALL" ? "All" : task.assignedDesignation}
                           </span>
                         </div>
                         {task.description && (
@@ -586,7 +688,18 @@ export default function AdminTasksBoard() {
                 onChange={(e) => setNewFixedDesc(e.target.value)}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
+                <Select
+                  label="Target Designation"
+                  value={newFixedAssignedDesignation}
+                  onChange={(e) => setNewFixedAssignedDesignation(e.target.value)}
+                >
+                  <SelectItem value="ALL">All Employees</SelectItem>
+                  <SelectItem value="Video Editor">Video Editor</SelectItem>
+                  <SelectItem value="Content Writer">Content Writer</SelectItem>
+                  <SelectItem value="Graphic Designer">Graphic Designer</SelectItem>
+                </Select>
+
                 <Input
                   label="Category"
                   placeholder="e.g. General, Design"

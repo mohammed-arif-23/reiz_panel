@@ -10,6 +10,7 @@ const FixedTaskSchema = new Schema({
     required: true,
   },
   category: { type: String, default: "General" },
+  assignedDesignation: { type: String, default: "ALL" }, // "ALL", "Video Editor", "Content Writer", "Graphic Designer"
   createdAt: { type: Date, default: Date.now },
 });
 
