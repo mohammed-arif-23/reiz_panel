@@ -152,6 +152,59 @@ export default function CalendarPage() {
   const [eodValue, setEodValue] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Tasks assigned for the clicked day
+  const [dayTasks, setDayTasks] = useState<any[]>([]);
+  const [dayTasksLoading, setDayTasksLoading] = useState(false);
+
+  const getDefaultCategory = useCallback(() => {
+    if (!gridUser?.designation) return "General";
+    const des = gridUser.designation.toLowerCase();
+    if (des.includes("video")) return "Video Editing";
+    if (des.includes("writer") || des.includes("content")) return "Content Writing";
+    if (des.includes("design")) return "Graphic Design";
+    return "General";
+  }, [gridUser]);
+
+  const fetchDayTasks = async (dateStr: string) => {
+    setDayTasksLoading(true);
+    try {
+      const res = await fetch(`/api/tasks?date=${dateStr}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.sheet && data.sheet.tasks) {
+          setDayTasks(data.sheet.tasks);
+        } else {
+          setDayTasks([]);
+        }
+      }
+    } catch {
+      setDayTasks([]);
+    } finally {
+      setDayTasksLoading(false);
+    }
+  };
+
+  const handleDayTaskStatusChange = async (taskId: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setSuccess("Task status updated successfully!");
+        if (selectedDate) {
+          fetchDayTasks(selectedDate);
+        }
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to update task status.");
+      }
+    } catch {
+      setError("An error occurred while updating task status.");
+    }
+  };
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -239,6 +292,11 @@ export default function CalendarPage() {
     setSelectedDate(cell.date || todayStr);
     setError("");
 
+    // Fetch tasks assigned for this day
+    if (cell.date) {
+      fetchDayTasks(cell.date);
+    }
+
     const gridRow = gridRows.find((r) => r.date === cell.date);
     
     // Check if multiple entries exist
@@ -259,7 +317,7 @@ export default function CalendarPage() {
     } else {
       // Default initial 1 empty row
       existingEntries = [
-        { id: `entry-${Date.now()}-1`, title: "", category: "Video Editing", hoursSpent: "1", link: "", remarks: "", clientId: "", clientName: "" },
+        { id: `entry-${Date.now()}-1`, title: "", category: getDefaultCategory(), hoursSpent: "1", link: "", remarks: "", clientId: "", clientName: "" },
       ];
     }
 
@@ -272,7 +330,7 @@ export default function CalendarPage() {
   const handleAddWorkEntry = () => {
     setWorkEntries((prev) => [
       ...prev,
-      { id: `entry-${Date.now()}-${prev.length + 1}`, title: "", category: "General Work", hoursSpent: "1", link: "", remarks: "", clientId: "", clientName: "" },
+      { id: `entry-${Date.now()}-${prev.length + 1}`, title: "", category: getDefaultCategory(), hoursSpent: "1", link: "", remarks: "", clientId: "", clientName: "" },
     ]);
   };
 
@@ -295,9 +353,12 @@ export default function CalendarPage() {
 
     let hasError = false;
     const targetDate = selectedDate || selectedDay?.date || todayStr;
+    const userCategory = getDefaultCategory();
 
-    // Filter out completely empty entries
-    const validEntries = workEntries.filter((e) => e.title.trim() !== "" || e.remarks.trim() !== "");
+    // Filter out completely empty entries and auto-map category
+    const validEntries = workEntries
+      .filter((e) => e.title.trim() !== "" || e.remarks.trim() !== "")
+      .map((e) => ({ ...e, category: e.category || userCategory }));
 
     try {
       const res = await fetch("/api/tasks/cell", {
@@ -621,6 +682,57 @@ export default function CalendarPage() {
 
             {/* ── Scrollable Body: Multiple Work Entries ── */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+              {/* Tasks Assigned for this Day */}
+              <div className="space-y-3 pb-4 border-b border-[#E8DFD3]">
+                <h3 className="text-sm font-bold text-[#2D221E]">Tasks Assigned for this Day</h3>
+                {dayTasksLoading ? (
+                  <p className="text-xs text-[#8C7A6B] font-bold animate-pulse">Loading tasks...</p>
+                ) : dayTasks.length === 0 ? (
+                  <p className="text-xs text-[#8C7A6B]/75 italic">No admin tasks assigned for this day.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {dayTasks.map((task) => (
+                      <div key={task._id} className="p-3 rounded-xl bg-white border border-[#E8DFD3] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-extrabold text-[#2D221E]">{task.title}</span>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                              task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
+                              task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                              "bg-zinc-100 text-zinc-600 border border-zinc-200"
+                            }`}>
+                              {task.priority}
+                            </span>
+                          </div>
+                          {task.description && (
+                            <p className="text-[11px] text-[#8C7A6B] font-medium leading-relaxed">{task.description}</p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                          <span className="text-[10px] font-black uppercase text-[#8C7A6B]">Status:</span>
+                          <select
+                            value={task.status}
+                            onChange={(e) => handleDayTaskStatusChange(task._id, e.target.value)}
+                            className={`rounded-lg border border-[#E8DFD3] bg-[#FAF6F0] px-2 py-1 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#362722] ${
+                              task.status === "APPROVED" ? "bg-emerald-50 text-emerald-800" :
+                              task.status === "WAITING_FOR_REVIEW" ? "bg-blue-50 text-blue-800" :
+                              task.status === "IN_PROGRESS" ? "bg-amber-50 text-amber-800" :
+                              "bg-[#FAF6F0] text-[#2D221E]"
+                            }`}
+                          >
+                            <option value="NOT_STARTED">Not Started</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="WAITING_FOR_REVIEW">Waiting for Review</option>
+                            <option value="APPROVED" disabled>Approved (Locked)</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-[#2D221E]">Work Completed Entries</h3>
@@ -657,7 +769,7 @@ export default function CalendarPage() {
                       )}
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold text-[#8C7A6B] uppercase tracking-wider mb-1">
                           Mapped Client
@@ -695,24 +807,6 @@ export default function CalendarPage() {
                           placeholder="e.g. MAY VR 8 Reel Video Edit"
                           className="w-full rounded-lg border border-[#E8DFD3] bg-[#FAF6F0] px-3 py-2 text-xs font-bold text-[#2D221E] focus:outline-none focus:ring-2 focus:ring-[#362722]"
                         />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#8C7A6B] uppercase tracking-wider mb-1">
-                          Category / Type
-                        </label>
-                        <select
-                          value={entry.category}
-                          onChange={(e) => handleUpdateWorkEntry(entry.id, "category", e.target.value)}
-                          className="w-full rounded-lg border border-[#E8DFD3] bg-[#FAF6F0] px-3 py-2 text-xs font-bold text-[#2D221E] focus:outline-none focus:ring-2 focus:ring-[#362722]"
-                        >
-                          <option value="Video Editing">Video Editing</option>
-                          <option value="Graphic Design">Graphic Design</option>
-                          <option value="Social Media">Social Media</option>
-                          <option value="Sales & Outreach">Sales & Outreach</option>
-                          <option value="Client Meeting">Client Meeting</option>
-                          <option value="General">General</option>
-                        </select>
                       </div>
                     </div>
 

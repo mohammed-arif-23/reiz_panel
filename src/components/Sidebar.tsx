@@ -64,17 +64,20 @@ export default function Sidebar({ user }: SidebarProps) {
     }
   };
 
+  const hasAdminAccess = ["SUPER_ADMIN", "ADMIN", "MANAGER"].includes(user.role);
+  const isContentWriter = user.designation === "Content Writer";
+
   // Simplified navigation list (No unnecessary ongoing/completed todo tabs)
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Calendar View", href: "/dashboard/calendar", icon: Calendar },
     { name: "Monthly Sheet", href: "/dashboard/monthly-sheet", icon: Grid },
-    { name: "Content Scripts", href: "/dashboard/scripts", icon: FileText },
+    ...(hasAdminAccess || isContentWriter
+      ? [{ name: "Content Scripts & Deliverables", href: "/dashboard/scripts", icon: FileText }]
+      : []),
     { name: "Leave Requests", href: "/dashboard/leave", icon: FileText },
     { name: "Profile", href: "/dashboard/profile", icon: UserIcon },
   ];
-
-  const hasAdminAccess = ["SUPER_ADMIN", "ADMIN", "MANAGER"].includes(user.role);
 
   return (
     <>

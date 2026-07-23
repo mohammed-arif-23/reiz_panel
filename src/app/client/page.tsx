@@ -132,11 +132,7 @@ export default function ClientPortalPage() {
                     </span>
                   </div>
 
-                  {script.fileName && (
-                    <p className="text-xs font-bold text-[#B87C4C]">
-                      Video File Name: <span className="text-[#2D221E] font-medium">{script.fileName}</span>
-                    </p>
-                  )}
+                  {/* Removed Video File Name display per request */}
 
                   <div className="bg-[#FAF6F0] border border-[#E8DFD3] p-4 rounded-xl font-mono text-xs text-[#2D221E] whitespace-pre-wrap leading-relaxed">
                     {script.scriptContent}

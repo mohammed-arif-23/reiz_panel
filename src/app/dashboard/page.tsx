@@ -31,7 +31,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [workHoursStr, setWorkHoursStr] = useState("00:00:00");
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(true);
 
   const fetchStatus = async () => {
     try {
@@ -48,9 +51,61 @@ export default function Dashboard() {
     }
   };
 
+  const fetchTodayTasks = async () => {
+    try {
+      const res = await fetch("/api/tasks");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.sheet && data.sheet.tasks) {
+          setTasks(data.sheet.tasks);
+        } else {
+          setTasks([]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch today's tasks:", err);
+    } finally {
+      setTasksLoading(false);
+    }
+  };
+
+  const handleTaskStatusChange = async (taskId: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setSuccess("Task status updated successfully!");
+        fetchTodayTasks();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to update task status.");
+      }
+    } catch {
+      setError("An error occurred while updating task status.");
+    }
+  };
+
   useEffect(() => {
     fetchStatus();
+    fetchTodayTasks();
   }, []);
+
+  useEffect(() => {
+    if (success) {
+      const t = setTimeout(() => setSuccess(""), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [success]);
+
+  useEffect(() => {
+    if (error) {
+      const t = setTimeout(() => setError(""), 8000);
+      return () => clearTimeout(t);
+    }
+  }, [error]);
 
   useEffect(() => {
     if (!status?.checkedIn || status.checkedOut) return;
@@ -178,6 +233,12 @@ export default function Dashboard() {
         </Alert>
       )}
 
+      {success && (
+        <Alert color="success" startContent={<CheckCircle className="h-5 w-5" />}>
+          {success}
+        </Alert>
+      )}
+
       {/* Main Grid Layout */}
       <div className="grid gap-6 md:grid-cols-3">
         {/* Attendance Duty Card */}
@@ -286,6 +347,70 @@ export default function Dashboard() {
                 </button>
               </Link>
             </div>
+          </CardBody>
+        </Card>
+
+        {/* Tasks Assigned for Today */}
+        <Card className="border border-[#E8DFD3] shadow-sm bg-white md:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-[#E8DFD3] bg-[#F5EFE6]">
+            <div>
+              <h2 className="text-base font-black text-[#2D221E]">Tasks Assigned for Today</h2>
+              <p className="text-xs text-[#8C7A6B] font-bold">Track and update the status of your assigned tasks</p>
+            </div>
+            <span className="text-xs bg-[#362722] text-[#FAF6F0] px-2.5 py-1 rounded-full font-bold">
+              {tasks.length} {tasks.length === 1 ? "Task" : "Tasks"}
+            </span>
+          </CardHeader>
+          <CardBody className="p-6">
+            {tasksLoading ? (
+              <p className="text-xs text-[#8C7A6B] font-bold animate-pulse">Loading tasks...</p>
+            ) : tasks.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-sm font-extrabold text-[#2D221E]">🎉 No tasks assigned for today!</p>
+                <p className="text-xs text-[#8C7A6B] mt-1">Check back later or log your deliverables directly.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-[#E8DFD3]">
+                {tasks.map((task) => (
+                  <div key={task._id} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-extrabold text-[#2D221E]">{task.title}</h3>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                          task.priority === "HIGH" ? "bg-red-50 text-red-700 border border-red-100" :
+                          task.priority === "MEDIUM" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                          "bg-[#FAF6F0] text-zinc-600 border border-zinc-200"
+                        }`}>
+                          {task.priority} Priority
+                        </span>
+                      </div>
+                      {task.description && (
+                        <p className="text-xs text-[#8C7A6B] font-medium leading-relaxed">{task.description}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <label className="text-[10px] font-black uppercase text-[#8C7A6B] whitespace-nowrap">Status:</label>
+                      <select
+                        value={task.status}
+                        onChange={(e) => handleTaskStatusChange(task._id, e.target.value)}
+                        className={`rounded-lg border border-[#E8DFD3] px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#362722] ${
+                          task.status === "APPROVED" ? "bg-emerald-50 text-emerald-800" :
+                          task.status === "WAITING_FOR_REVIEW" ? "bg-blue-50 text-blue-800" :
+                          task.status === "IN_PROGRESS" ? "bg-amber-50 text-amber-800" :
+                          "bg-white text-[#2D221E]"
+                        }`}
+                      >
+                        <option value="NOT_STARTED">Not Started</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="WAITING_FOR_REVIEW">Waiting for Review</option>
+                        <option value="APPROVED" disabled>Approved (Locked)</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardBody>
         </Card>
       </div>

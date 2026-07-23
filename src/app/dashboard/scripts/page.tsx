@@ -36,9 +36,7 @@ export default function ScriptSubmissionsPage() {
   // Form State
   const [selectedClientId, setSelectedClientId] = useState("");
   const [title, setTitle] = useState("");
-  const [fileName, setFileName] = useState("");
   const [scriptContent, setScriptContent] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
@@ -85,9 +83,9 @@ export default function ScriptSubmissionsPage() {
         body: JSON.stringify({
           clientId: selectedClientId,
           title,
-          fileName,
+          fileName: "",
           scriptContent,
-          videoUrl,
+          videoUrl: "",
         }),
       });
 
@@ -95,9 +93,7 @@ export default function ScriptSubmissionsPage() {
       if (res.ok) {
         setSuccess("Script/Deliverable submitted for client review!");
         setTitle("");
-        setFileName("");
         setScriptContent("");
-        setVideoUrl("");
         fetchData();
       } else {
         setError(data.error || "Failed to submit script.");
@@ -176,33 +172,7 @@ export default function ScriptSubmissionsPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#8C7A6B] mb-1.5">
-                  Video File Name
-                </label>
-                <input
-                  type="text"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
-                  placeholder="e.g. REIZ_Client1_Promo_v1.mp4"
-                  className="w-full rounded-xl border border-[#E8DFD3] bg-[#FAF6F0] px-3.5 py-2.5 text-xs font-bold text-[#2D221E] focus:outline-none focus:ring-2 focus:ring-[#362722]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#8C7A6B] mb-1.5">
-                  Optional Draft Video / Resource Link
-                </label>
-                <input
-                  type="text"
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="https://drive.google.com/..."
-                  className="w-full rounded-xl border border-[#E8DFD3] bg-[#FAF6F0] px-3.5 py-2.5 text-xs font-medium text-[#2D221E] focus:outline-none focus:ring-2 focus:ring-[#362722]"
-                />
-              </div>
-            </div>
+            {/* Removed Video File Name & Resource Link inputs per request */}
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#8C7A6B] mb-1.5">
@@ -259,11 +229,7 @@ export default function ScriptSubmissionsPage() {
                     </span>
                   </div>
 
-                  {script.fileName && (
-                    <p className="text-xs font-bold text-[#B87C4C]">
-                      Video File Name: <span className="text-[#2D221E] font-medium">{script.fileName}</span>
-                    </p>
-                  )}
+                  {/* Removed Video File Name display per request */}
 
                   <div className="bg-[#FAF6F0] border border-[#E8DFD3] p-3.5 rounded-xl font-mono text-xs text-[#2D221E] whitespace-pre-wrap">
                     {script.scriptContent}
