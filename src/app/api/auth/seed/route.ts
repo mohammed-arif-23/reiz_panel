@@ -255,6 +255,26 @@ export async function GET(request: NextRequest) {
         status:             "ACTIVE",
         assignedTemplateId: contentWriterTemplate._id,
       },
+      {
+        name:               "Gowtham",
+        email:              "gowthameditz25@gmail.com",
+        password:           hashed,
+        role:               "EMPLOYEE",
+        designation:        "Video Editor",
+        department:         "Production",
+        status:             "ACTIVE",
+        assignedTemplateId: videoEditorTemplate._id,
+      },
+      {
+        name:               "Mohammed Abbas",
+        email:              "contact.mohammedabbas1308@gmail.com",
+        password:           hashed,
+        role:               "EMPLOYEE",
+        designation:        "Video Editor",
+        department:         "Production",
+        status:             "ACTIVE",
+        assignedTemplateId: videoEditorTemplate._id,
+      },
     ];
 
     const upsertedUsers: any[] = [];
