@@ -116,7 +116,7 @@ export default function ProfilePage() {
   const fetchProfile = useCallback(async () => {
     try {
       const [userRes, notifRes] = await Promise.all([
-        fetch("/api/me"),
+        fetch("/api/auth/me"),
         fetch("/api/notifications"),
       ]);
 
